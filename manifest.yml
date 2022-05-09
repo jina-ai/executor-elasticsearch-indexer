@@ -1,2 +1,5 @@
 manifest_version: 1
 name: ElasticSearchIndexer
+description: ElasticSearchIndexer indexes Documents in an ElasticSearch server or clusterusing DocumentArray with `storage='elasticsearch'`
+url: https://github.com/jina-ai/executor-elasticsearch-indexer
+keywords: ['indexer elasticsearch ann similarity_search pre-filtering database 3.0-exclusive']
