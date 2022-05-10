@@ -52,15 +52,15 @@ def test_init(docker_compose):
     assert indexer._index._config.hosts == 'http://localhost:9200'
 
 
-def test_index(docs, docker_compose, tmpdir):
-    indexer = ElasticSearchIndexer(index_name=str(tmpdir))
+def test_index(docs, docker_compose):
+    indexer = ElasticSearchIndexer(index_name='test1')
     indexer.index(docs)
 
     assert len(indexer._index) == len(docs)
 
 
-def test_delete(docs, docker_compose, tmpdir):
-    indexer = ElasticSearchIndexer(index_name=str(tmpdir))
+def test_delete(docs, docker_compose):
+    indexer = ElasticSearchIndexer(index_name='test2')
     indexer.index(docs)
 
     ids = ['doc1', 'doc2', 'doc3']
@@ -70,9 +70,9 @@ def test_delete(docs, docker_compose, tmpdir):
         assert doc_id not in indexer._index
 
 
-def test_update(docs, update_docs, docker_compose, tmpdir):
+def test_update(docs, update_docs, docker_compose):
     # index docs first
-    indexer = ElasticSearchIndexer(index_name=str(tmpdir))
+    indexer = ElasticSearchIndexer(index_name='test3')
     indexer.index(docs)
     assert_document_arrays_equal(indexer._index, docs)
 
@@ -82,8 +82,8 @@ def test_update(docs, update_docs, docker_compose, tmpdir):
     assert indexer._index['doc1'].text == 'modified'
 
 
-def test_fill_embeddings(docker_compose, tmpdir):
-    indexer = ElasticSearchIndexer(index_name=str(tmpdir), distance='l2_norm', n_dim=1)
+def test_fill_embeddings(docker_compose):
+    indexer = ElasticSearchIndexer(index_name='test4', distance='l2_norm', n_dim=1)
 
     indexer.index(DocumentArray([Document(id='a', embedding=np.array([1]))]))
     search_docs = DocumentArray([Document(id='a')])
@@ -95,7 +95,7 @@ def test_fill_embeddings(docker_compose, tmpdir):
         indexer.fill_embedding(DocumentArray([Document(id='b')]))
 
 
-def test_filter(docker_compose, tmpdir):
+def test_filter(docker_compose):
     docs = DocumentArray.empty(5)
     docs[0].text = 'hello'
     docs[1].text = 'world'
@@ -103,7 +103,7 @@ def test_filter(docker_compose, tmpdir):
     docs[2].tags['y'] = 0.6
     docs[3].tags['x'] = 0.8
 
-    indexer = ElasticSearchIndexer(index_name=str(tmpdir))
+    indexer = ElasticSearchIndexer(index_name='test5')
     indexer.index(docs)
 
     result = indexer.filter(parameters={'query': {'text': {'$eq': 'hello'}}})
@@ -115,17 +115,17 @@ def test_filter(docker_compose, tmpdir):
     assert result[0].tags['x'] == 0.8
 
 
-def test_persistence(docs, docker_compose, tmpdir):
-    indexer1 = ElasticSearchIndexer(index_name=str(tmpdir), distance='l2_norm')
+def test_persistence(docs, docker_compose):
+    indexer1 = ElasticSearchIndexer(index_name='test6', distance='l2_norm')
     indexer1.index(docs)
-    indexer2 = ElasticSearchIndexer(index_name=str(tmpdir), distance='l2_norm')
+    indexer2 = ElasticSearchIndexer(index_name='test6', distance='l2_norm')
     assert_document_arrays_equal(indexer2._index, docs)
 
 
 @pytest.mark.parametrize('metric, metric_name', [('l2_norm', 'euclid_similarity'), ('cosine', 'cosine_similarity')])
-def test_search(metric, metric_name, docs, docker_compose, tmpdir):
+def test_search(metric, metric_name, docs, docker_compose):
     # test general/normal case
-    indexer = ElasticSearchIndexer(index_name=str(tmpdir), distance=metric)
+    indexer = ElasticSearchIndexer(index_name='test7', distance=metric)
     indexer.index(docs)
     query = DocumentArray([Document(embedding=np.random.rand(128)) for _ in range(10)])
     indexer.search(query)
