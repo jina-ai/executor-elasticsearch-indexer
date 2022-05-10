@@ -1,5 +1,5 @@
 from jina import Executor, requests
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union, Mapping
 from docarray import DocumentArray
 from jina.logging.logger import JinaLogger
 
@@ -7,14 +7,14 @@ from jina.logging.logger import JinaLogger
 class ElasticSearchIndexer(Executor):
     def __init__(
         self,
-        hosts: Optional[str] = 'http://localhost:9200',
-        n_dim: Optional[int] = 128,
-        distance: Optional[str] = 'cosine',
+        hosts: Union[str, List[Union[str, Mapping[str, Union[str, int]]]], None] = 'http://localhost:9200',
+        n_dim: int = 128,
+        distance: str = 'cosine',
         index_name: Optional[str] = None,
         es_config: Optional[Dict[str, Any]] = None,
-        index_text: Optional[bool] = False,
+        index_text: bool = False,
         tag_indices: Optional[List[str]] = None,
-        batch_size: Optional[int] = 64,
+        batch_size: int = 64,
         ef_construction: Optional[int] = None,
         m: Optional[int] = None,
         **kwargs,
