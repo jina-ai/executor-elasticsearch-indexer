@@ -10,7 +10,7 @@ class ElasticSearchIndexer(Executor):
         hosts: Union[str, List[Union[str, Mapping[str, Union[str, int]]]], None] = 'http://localhost:9200',
         n_dim: int = 128,
         distance: str = 'cosine',
-        index_name: Optional[str] = None,
+        index_name: str = 'Persisted',
         es_config: Optional[Dict[str, Any]] = None,
         index_text: bool = False,
         tag_indices: Optional[List[str]] = None,
