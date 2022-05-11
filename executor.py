@@ -5,6 +5,7 @@ from jina.logging.logger import JinaLogger
 
 
 class ElasticSearchIndexer(Executor):
+    """ElasticSearchIndexer indexes Documents into an ElasticSearch service using DocumentArray  with `storage='elasticsearch'`"""
     def __init__(
         self,
         hosts: Union[str, List[Union[str, Mapping[str, Union[str, int]]]], None] = 'http://localhost:9200',
@@ -19,6 +20,21 @@ class ElasticSearchIndexer(Executor):
         m: Optional[int] = None,
         **kwargs,
     ):
+        """
+        :param hosts: host configuration of the ElasticSearch node or cluster
+        :param n_dim: number of dimensions
+        :param distance: The distance metric used for the vector index and vector search
+        :param index_name: ElasticSearch Index name used for the storage
+        :param es_config: ElasticSearch cluster configuration object
+        :param index_text: If set to True, ElasticSearch will index the text attribute of each Document to allow text
+            search
+        :param tag_indices: Tag fields to be indexed in ElasticSearch to allow text search on them.
+        :param batch_size: Batch size used to handle storage refreshes/updates.
+        :param ef_construction: The size of the dynamic list for the nearest neighbors. Defaults to the default
+            `ef_construction` value in ElasticSearch
+        :param m: The maximum number of connections per element in all layers. Defaults to the default
+            `m` in ElasticSearch.
+        """
 
         super().__init__(**kwargs)
 
@@ -42,6 +58,9 @@ class ElasticSearchIndexer(Executor):
 
     @requests(on='/index')
     def index(self, docs: DocumentArray, **kwargs):
+        """Index new documents
+        :param docs: the Documents to index
+        """
         self._index.extend(docs)
 
     @requests(on='/search')
@@ -50,18 +69,20 @@ class ElasticSearchIndexer(Executor):
             docs: 'DocumentArray',
             **kwargs,
     ):
-        """
-        Perform a vector similarity search and retrieve the full Document match
+        """Perform a vector similarity search and retrieve the full Document match
+
         :param docs: the Documents to search with
-        function. They overwrite the original match_args arguments.
         """
         docs.match(self._index)
 
     @requests(on='/delete')
     def delete(self, parameters: Dict, **kwargs):
-        """
-        Delete entries from the index by id
-        :param parameters: parameters to the request
+        """Delete entries from the index by id
+
+        :param parameters: parameters of the request
+
+        Keys accepted:
+            - 'ids': List of Document IDs to be deleted
         """
         deleted_ids = parameters.get('ids', [])
         if len(deleted_ids) == 0:
@@ -70,9 +91,8 @@ class ElasticSearchIndexer(Executor):
 
     @requests(on='/update')
     def update(self, docs: DocumentArray, **kwargs):
-        """
-        Update doc with the same id, if not present, append into storage
-        :param docs: the documents to update
+        """Update existing documents
+        :param docs: the Documents to update
         """
 
         for doc in docs:
@@ -87,25 +107,23 @@ class ElasticSearchIndexer(Executor):
     def filter(self, parameters: Dict, **kwargs):
         """
         Query documents from the indexer by the filter `query` object in parameters. The `query` object must follow the
-        specifications in the `find` method of `DocumentArray`: https://docarray.jina.ai/fundamentals/documentarray/find/#filter-with-query-operators
+        specifications in the `find` method of `DocumentArray` using Weaviate: https://docarray.jina.ai/fundamentals/documentarray/find/#filter-with-query-operators
         :param parameters: parameters of the request
         """
         return self._index.find(parameters['query'])
 
     @requests(on='/fill_embedding')
     def fill_embedding(self, docs: DocumentArray, **kwargs):
-        """
-        retrieve embedding of Documents by id
-        :param docs: DocumentArray to search with
+        """Fill embedding of Documents by id
+
+        :param docs: DocumentArray to be filled with Embeddings from the index
         """
         for doc in docs:
             doc.embedding = self._index[doc.id].embedding
 
     @requests(on='/clear')
     def clear(self, **kwargs):
-        """
-        clear the database
-        """
+        """Clear the index"""
         self._index.clear()
 
     def close(self) -> None:
