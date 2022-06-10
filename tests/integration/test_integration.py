@@ -53,7 +53,7 @@ numeric_operators_elasticsearch = {
 
 
 @pytest.mark.parametrize('operator', list(numeric_operators_elasticsearch.keys()))
-def test_filtering(docker_compose, operator: str):
+def test_pre_filtering(docker_compose, operator: str):
     n_dim = 2
 
     f = Flow().add(
