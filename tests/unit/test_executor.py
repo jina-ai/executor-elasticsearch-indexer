@@ -106,11 +106,11 @@ def test_filter(docker_compose):
     indexer = ElasticSearchIndexer(index_name='test5')
     indexer.index(docs)
 
-    result = indexer.filter(parameters={'query': {'text': {'$eq': 'hello'}}})
+    result = indexer.filter(parameters={'filter': {'match': {'text': 'hello'}}})
     assert len(result) == 1
     assert result[0].text == 'hello'
 
-    result = docs.find({'tags__x': {'$gte': 0.5}})
+    result = indexer.filter(parameters={'range': {'price': {'gte': 0.5}}})
     assert len(result) == 1
     assert result[0].tags['x'] == 0.8
 

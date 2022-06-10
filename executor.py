@@ -116,7 +116,7 @@ class ElasticSearchIndexer(Executor):
         specifications in the `find` method of `DocumentArray` using ElasticSearch: https://docarray.jina.ai/advanced/document-store/elasticsearch/#search-by-filter-query
         :param parameters: parameters of the request, containing the `filter` query
         """
-        return self._index.find(parameters.get('filter', None))
+        return self._index.find(filter=parameters.get('filter', None))
 
     @requests(on='/fill_embedding')
     def fill_embedding(self, docs: DocumentArray, **kwargs):
