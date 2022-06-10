@@ -97,3 +97,47 @@ with f:
 # will print "The ID of the best match of [1,1] is: b"
 print('The ID of the best match of [1,1] is: ', docs[0].matches[0].id)
 ```
+
+### Using filtering
+To do filtering with the ElasticSearchIndexer you should first define columns and precise the dimension of your embedding space.
+For instance :
+
+
+```python
+from jina import Flow
+f = Flow().add(
+    uses='jinahub+docker://ElasticSearchIndexer',
+    uses_with={
+        'n_dim': 3,
+        'distance': 'l2_norm',
+        'columns': [('price', 'float')],
+    },
+)
+```
+
+Then you can pass a filter as a parameters when searching for document:
+```python
+from docarray import Document, DocumentArray
+import numpy as np
+docs = DocumentArray(
+    [
+        Document(id=f'r{i}', embedding=np.random.rand(3), tags={'price': i})
+        for i in range(50)
+    ]
+)
+
+filter = {
+    'range': {
+        'price': {
+            'lte': 30,
+        }
+    }
+}
+
+with f:
+    f.index(docs)
+    doc_query = DocumentArray([Document(embedding=np.random.rand(3))])
+    f.search(doc_query, parameters={'filter': filter})
+```
+
+For more information please refer to the docarray [documentation](https://docarray.jina.ai/advanced/document-store/elasticsearch/#vector-search-with-filter-query)
