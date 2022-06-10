@@ -93,3 +93,43 @@ def test_pre_filtering(docker_compose, operator: str):
                     for r in indexed_docs[0].matches
                 ]
             )
+
+@pytest.mark.parametrize('operator', list(numeric_operators_elasticsearch.keys()))
+def test_filtering(docker_compose, operator: str):
+    n_dim = 2
+    f = Flow().add(
+        uses=ElasticSearchIndexer,
+        uses_with={
+            'n_dim': n_dim,
+            'columns': [('price', 'float')],
+        },
+    )
+
+    docs = DocumentArray(
+        [
+            Document(id=f'r{i}', tags={'price': i})
+            for i in range(50)
+        ]
+    )
+    with f:
+
+        f.index(docs)
+
+        for threshold in [10, 20, 30]:
+            filter_ = {
+                'range': {
+                    'price': {
+                        operator: threshold,
+                    }
+                }
+            }
+        indexed_docs = f.post('/filter', parameters={'filter': filter_})
+
+        assert len(indexed_docs) > 0
+
+        assert all(
+            [
+                numeric_operators_elasticsearch[operator](r.tags['price'], threshold)
+                for r in indexed_docs
+            ]
+        )
