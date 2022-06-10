@@ -49,7 +49,6 @@ numeric_operators_elasticsearch = {
     'gt': operator.gt,
     'lte': operator.le,
     'lt': operator.lt,
-    'eq': operator.eq,
 }
 
 
