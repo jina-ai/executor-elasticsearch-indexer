@@ -99,7 +99,7 @@ print('The ID of the best match of [1,1] is: ', docs[0].matches[0].id)
 ```
 
 ### Using filtering
-To do filtering with the ElasticSearchIndexer you should first define columns and precise the dimension of your embedding space.
+To leverage a filter with  `ElasticSearchIndexer` you should first define the columns and the dimension of your embedding space, with `columns` and `n_dim` respectively.
 For instance :
 
 
