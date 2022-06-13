@@ -1,1 +1,1 @@
-docarray[elasticsearch]>=0.13.10
+docarray[elasticsearch]>=0.13.21

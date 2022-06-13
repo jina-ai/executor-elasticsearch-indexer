@@ -1,5 +1,5 @@
 from jina import Executor, requests
-from typing import Optional, Dict, Any, List, Union, Mapping
+from typing import Optional, Dict, Any, List, Union, Mapping, Tuple
 from docarray import DocumentArray
 from jina.logging.logger import JinaLogger
 
@@ -18,6 +18,7 @@ class ElasticSearchIndexer(Executor):
         batch_size: int = 64,
         ef_construction: Optional[int] = None,
         m: Optional[int] = None,
+        columns: Optional[List[Tuple[str, str]]] = None,
         **kwargs,
     ):
         """
@@ -34,6 +35,7 @@ class ElasticSearchIndexer(Executor):
             `ef_construction` value in ElasticSearch
         :param m: The maximum number of connections per element in all layers. Defaults to the default
             `m` in ElasticSearch.
+        :param columns: precise columns for the Indexer (used for filtering).
         """
 
         super().__init__(**kwargs)
@@ -50,7 +52,8 @@ class ElasticSearchIndexer(Executor):
                 'tag_indices': tag_indices or [],
                 'batch_size': batch_size,
                 'ef_construction': ef_construction,
-                'm': m
+                'm': m,
+                'columns': columns,
             },
         )
 
@@ -67,13 +70,16 @@ class ElasticSearchIndexer(Executor):
     def search(
             self,
             docs: 'DocumentArray',
+            parameters: Dict = {},
             **kwargs,
     ):
         """Perform a vector similarity search and retrieve the full Document match
 
         :param docs: the Documents to search with
+        :param parameters: Dictionary to define the `filter` that you want to use.
+        :param kwargs: additional kwargs for the endpoint
         """
-        docs.match(self._index)
+        docs.match(self._index, filter=parameters.get('filter', None))
 
     @requests(on='/delete')
     def delete(self, parameters: Dict, **kwargs):
@@ -107,10 +113,10 @@ class ElasticSearchIndexer(Executor):
     def filter(self, parameters: Dict, **kwargs):
         """
         Query documents from the indexer by the filter `query` object in parameters. The `query` object must follow the
-        specifications in the `find` method of `DocumentArray` using Weaviate: https://docarray.jina.ai/fundamentals/documentarray/find/#filter-with-query-operators
-        :param parameters: parameters of the request
+        specifications in the `find` method of `DocumentArray` using ElasticSearch: https://docarray.jina.ai/advanced/document-store/elasticsearch/#search-by-filter-query
+        :param parameters: parameters of the request, containing the `filter` query
         """
-        return self._index.find(parameters['query'])
+        return self._index.find(filter=parameters.get('filter', None))
 
     @requests(on='/fill_embedding')
     def fill_embedding(self, docs: DocumentArray, **kwargs):

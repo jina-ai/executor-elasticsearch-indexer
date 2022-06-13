@@ -97,20 +97,20 @@ def test_fill_embeddings(docker_compose):
 
 def test_filter(docker_compose):
     docs = DocumentArray.empty(5)
-    docs[0].text = 'hello'
-    docs[1].text = 'world'
+    docs[0].tags['text'] = 'hello'
+    docs[1].tags['text'] = 'world'
     docs[2].tags['x'] = 0.3
     docs[2].tags['y'] = 0.6
     docs[3].tags['x'] = 0.8
 
-    indexer = ElasticSearchIndexer(index_name='test5')
+    indexer = ElasticSearchIndexer(index_name='test5', columns=[('text', 'str'), ('x', 'float')])
     indexer.index(docs)
 
-    result = indexer.filter(parameters={'query': {'text': {'$eq': 'hello'}}})
+    result = indexer.filter(parameters={'filter': {'match': {'text': 'hello'}}})
     assert len(result) == 1
-    assert result[0].text == 'hello'
+    assert result[0].tags['text'] == 'hello'
 
-    result = docs.find({'tags__x': {'$gte': 0.5}})
+    result = indexer.filter(parameters={'filter': {'range': {'x': {'gte': 0.5}}}})
     assert len(result) == 1
     assert result[0].tags['x'] == 0.8
 
