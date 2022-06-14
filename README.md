@@ -14,6 +14,9 @@ locally using docker-compose :
 docker-compose -f tests/docker-compose.yml up -d
 ```
 
+Note that if you run an `ElasticSearch` service locally and try to run the `ElasticSearchIndexer` via `docker`, you 
+have to specify `'hosts': 'http://host.docker.internal:9200'` instead of `localhost`, otherwise the client will not be 
+able to reach the service from within the container.
 ## Usage
 
 #### via Docker image (recommended)
@@ -24,11 +27,12 @@ from docarray import Document
 import numpy as np
 	
 f = Flow().add(
-    uses='jinahub+docker://ElasticSearch',
+    uses='jinahub://ElasticSearchIndexer',
     uses_with={
         'distance': 'cosine',
         'n_dim': 256,
-    }
+    },
+    install_requirements=True
 )
 
 with f:
@@ -76,7 +80,7 @@ from docarray import Document
 import numpy as np
 
 f = Flow().add(
-         uses='jinahub://ElasticSearch',
+         uses='jinahub://ElasticSearchIndexer',
          uses_with={'n_dim': 2},
      )
 
@@ -106,7 +110,7 @@ For instance :
 ```python
 from jina import Flow
 f = Flow().add(
-    uses='jinahub+docker://ElasticSearchIndexer',
+    uses='jinahub://ElasticSearchIndexer',
     uses_with={
         'n_dim': 3,
         'distance': 'l2_norm',
