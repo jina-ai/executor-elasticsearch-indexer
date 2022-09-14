@@ -18,7 +18,7 @@ class ElasticSearchIndexer(Executor):
         batch_size: int = 64,
         ef_construction: Optional[int] = None,
         m: Optional[int] = None,
-        columns: Optional[Union[List[Tuple[str, str]], Dict[str, str]]] = None,
+        columns: Optional[Union[List[Tuple[str, str]],Dict[str, str]]] = None,
         **kwargs,
     ):
         """
