@@ -12,6 +12,7 @@ class ElasticSearchIndexer(Executor):
         n_dim: int = 128,
         distance: str = 'cosine',
         index_name: str = 'persisted',
+        limit: int = 10,
         es_config: Optional[Dict[str, Any]] = None,
         index_text: bool = False,
         tag_indices: Optional[List[str]] = None,
@@ -26,6 +27,7 @@ class ElasticSearchIndexer(Executor):
         :param n_dim: number of dimensions
         :param distance: The distance metric used for the vector index and vector search
         :param index_name: ElasticSearch Index name used for the storage
+        :param limit: Number of results to get for each query document in search
         :param es_config: ElasticSearch cluster configuration object
         :param index_text: If set to True, ElasticSearch will index the text attribute of each Document to allow text
             search
@@ -39,6 +41,7 @@ class ElasticSearchIndexer(Executor):
         """
 
         super().__init__(**kwargs)
+        self.limit = limit
 
         self._index = DocumentArray(
             storage='elasticsearch',
@@ -79,7 +82,8 @@ class ElasticSearchIndexer(Executor):
         :param parameters: Dictionary to define the `filter` that you want to use.
         :param kwargs: additional kwargs for the endpoint
         """
-        docs.match(self._index, filter=parameters.get('filter', None))
+        limit = int(parameters.get('limit', self.limit))
+        docs.match(self._index, filter=parameters.get('filter', None), limit=limit)
 
     @requests(on='/delete')
     def delete(self, parameters: Dict, **kwargs):
