@@ -165,9 +165,9 @@ def test_search_with_match_args(docs, limit, docker_compose):
     )
     indexer.index(docs)
 
-    result = indexer.search(query)
-    assert len(result) == 1
-    assert result[0].tags['text'] == 'hello'
+    indexer.search(query)
+    assert len(query[0].matches) == 1
+    assert query[0].matches[0].tags['text'] == 'hello'
 
 
 def test_clear(docs, docker_compose):
