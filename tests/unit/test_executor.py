@@ -103,7 +103,9 @@ def test_filter(docker_compose):
     docs[2].tags['y'] = 0.6
     docs[3].tags['x'] = 0.8
 
-    indexer = ElasticSearchIndexer(index_name='test5', columns=[('text', 'str'), ('x', 'float')])
+    indexer = ElasticSearchIndexer(
+        index_name='test5', columns=[('text', 'str'), ('x', 'float')]
+    )
     indexer.index(docs)
 
     result = indexer.filter(parameters={'filter': {'match': {'text': 'hello'}}})
@@ -122,7 +124,10 @@ def test_persistence(docs, docker_compose):
     assert_document_arrays_equal(indexer2._index, docs)
 
 
-@pytest.mark.parametrize('metric, metric_name', [('l2_norm', 'euclid_similarity'), ('cosine', 'cosine_similarity')])
+@pytest.mark.parametrize(
+    'metric, metric_name',
+    [('l2_norm', 'euclid_similarity'), ('cosine', 'cosine_similarity')],
+)
 def test_search(metric, metric_name, docs, docker_compose):
     # test general/normal case
     indexer = ElasticSearchIndexer(index_name='test7', distance=metric)
@@ -136,19 +141,37 @@ def test_search(metric, metric_name, docs, docker_compose):
         ]
         assert sorted(similarities, reverse=True) == similarities
 
-def test_search_with_match_args(docs, docker_compose):
-    indexer = ElasticSearchIndexer(index_name='test8', match_args={'limit':1})
+
+@pytest.mark.parametrize('limit', [1, 2, 3])
+def test_search_with_match_args(docs, limit, docker_compose):
+    indexer = ElasticSearchIndexer(index_name='test8', match_args={'limit': limit})
     indexer.index(docs)
     assert 'limit' in indexer._match_args.keys()
-    assert indexer._match_args['limit'] == 1
+    assert indexer._match_args['limit'] == limit
 
     query = DocumentArray([Document(embedding=np.random.rand(128))])
     indexer.search(query)
 
-    assert len(query[0].matches) == 1
+    assert len(query[0].matches) == limit
+
+    docs[0].tags['text'] = 'hello'
+    docs[1].tags['text'] = 'world'
+    docs[2].tags['text'] = 'hello'
+
+    indexer = ElasticSearchIndexer(
+        index_name='test9',
+        columns=[('text', 'str')],
+        match_args={'filter': {'match': {'text': 'hello'}}, 'limit': 1},
+    )
+    indexer.index(docs)
+
+    result = indexer.search(query)
+    assert len(result) == 1
+    assert result[0].tags['text'] == 'hello'
+
 
 def test_clear(docs, docker_compose):
-    indexer = ElasticSearchIndexer(index_name='test9')
+    indexer = ElasticSearchIndexer(index_name='test10')
     indexer.index(docs)
     assert len(indexer._index) == 6
     indexer.clear()
