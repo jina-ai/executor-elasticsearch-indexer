@@ -136,9 +136,19 @@ def test_search(metric, metric_name, docs, docker_compose):
         ]
         assert sorted(similarities, reverse=True) == similarities
 
+def test_search_with_match_args(docs, docker_compose):
+    indexer = ElasticSearchIndexer(index_name='test8', match_args={'limit':1})
+    indexer.index(docs)
+    assert 'limit' in indexer._match_args.keys()
+    assert indexer._match_args['limit'] == 1
+
+    query = DocumentArray([Document(embedding=np.random.rand(128))])
+    indexer.search(query)
+
+    assert len(query[0].matches) == 1
 
 def test_clear(docs, docker_compose):
-    indexer = ElasticSearchIndexer(index_name='test8')
+    indexer = ElasticSearchIndexer(index_name='test9')
     indexer.index(docs)
     assert len(indexer._index) == 6
     indexer.clear()
