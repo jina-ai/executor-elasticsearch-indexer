@@ -159,7 +159,8 @@ f =  Flow().add(
 
 ### Configure other search behaviors
 
-You can use `match_args` argument to pass arguments to the `match` function as below.
+You can use `match_args` argument to pass arguments to the `match` function as below. The match function will be called
+during `/search` endpoint.
 
 ```python
 f =  Flow().add(
