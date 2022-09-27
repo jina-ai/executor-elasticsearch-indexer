@@ -171,7 +171,7 @@ f =  Flow().add(
              'use_scipy': True}})
 ```
 
-- For more details about overriding configurations, please refer to [here](https://docs.jina.ai/fundamentals/executor/executor-in-flow/#special-executor-attributes).
+- For more details about overriding configurations, please refer to [this page](https://docs.jina.ai/fundamentals/executor/executor-in-flow/#special-executor-attributes).
 - You can find more about the `match` function at [here](https://docarray.jina.ai/api/docarray.array.mixins.match/#docarray.array.mixins.match.MatchMixin.match)
 
 ### Configure the Search Behaviors on-the-fly
