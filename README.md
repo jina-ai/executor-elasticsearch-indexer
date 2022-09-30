@@ -182,7 +182,7 @@ f =  Flow().add(
 with f:
     f.search(
         inputs=Document(text='hello'), 
-        parameters={'limit': 100})
+        parameters={'match_args': {'limit': 100}})
 ```
 
 For more information please refer to the docarray [documentation](https://docarray.jina.ai/advanced/document-store/elasticsearch/#vector-search-with-filter-query)
