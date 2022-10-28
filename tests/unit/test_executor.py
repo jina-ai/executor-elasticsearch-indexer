@@ -10,19 +10,6 @@ from helper import assert_document_arrays_equal
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.abspath(os.path.join(cur_dir, '../docker-compose.yml'))
 
-@pytest.fixture
-def docs():
-    return DocumentArray(
-        [
-            Document(id='doc1', embedding=np.random.rand(128)),
-            Document(id='doc2', embedding=np.random.rand(128)),
-            Document(id='doc3', embedding=np.random.rand(128)),
-            Document(id='doc4', embedding=np.random.rand(128)),
-            Document(id='doc5', embedding=np.random.rand(128)),
-            Document(id='doc6', embedding=np.random.rand(128)),
-        ]
-    )
-
 
 @pytest.fixture
 def update_docs():

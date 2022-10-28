@@ -48,15 +48,13 @@ def test_reload_keep_state(docker_compose):
         assert len(first_search[0].matches) == len(second_search[0].matches)
 
 
-def test_persistence(docker_compose):
-    docs = DocumentArray([Document(id=f'doc{i}', embedding=np.random.rand(3)) for i in range(6)])
+def test_persistence(docs, docker_compose):
     f = Flow().add(
         uses=ElasticSearchIndexer,
-        uses_with={'index_name': 'test3', 'n_dim': 2, 'distance': 'l2_norm'},
+        uses_with={'index_name': 'test3', 'distance': 'l2_norm'},
     )
     with f:
         f.index(docs)
-
     indexer = ElasticSearchIndexer(index_name='test3', distance='l2_norm')
     assert_document_arrays_equal(indexer._index, docs)
     indexer.close()
