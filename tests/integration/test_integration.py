@@ -3,9 +3,9 @@ import operator
 import numpy as np
 import pytest
 from docarray import Document, DocumentArray
-from jina import Flow
-
 from executor import ElasticSearchIndexer
+from helper import assert_document_arrays_equal
+from jina import Flow
 
 
 def test_flow(docker_compose):
@@ -34,7 +34,10 @@ def test_flow(docker_compose):
 
 def test_reload_keep_state(docker_compose):
     docs = DocumentArray([Document(embedding=np.random.rand(3)) for _ in range(2)])
-    f = Flow().add(uses=ElasticSearchIndexer, uses_with={'index_name': 'test2', 'n_dim': 3},)
+    f = Flow().add(
+        uses=ElasticSearchIndexer,
+        uses_with={'index_name': 'test2', 'n_dim': 3},
+    )
 
     with f:
         f.index(docs)
@@ -43,6 +46,21 @@ def test_reload_keep_state(docker_compose):
     with f:
         second_search = f.search(inputs=docs)
         assert len(first_search[0].matches) == len(second_search[0].matches)
+
+
+def test_persistence(docker_compose):
+    docs = DocumentArray([Document(id=f'doc{i}', embedding=np.random.rand(3)) for i in range(6)])
+    f = Flow().add(
+        uses=ElasticSearchIndexer,
+        uses_with={'index_name': 'test3', 'n_dim': 2, 'distance': 'l2_norm'},
+    )
+    with f:
+        f.index(docs)
+
+    indexer = ElasticSearchIndexer(index_name='test3', distance='l2_norm')
+    assert_document_arrays_equal(indexer._index, docs)
+    indexer.close()
+
 
 numeric_operators_elasticsearch = {
     'gte': operator.ge,
@@ -89,10 +107,13 @@ def test_pre_filtering(docker_compose, operator: str):
 
             assert all(
                 [
-                    numeric_operators_elasticsearch[operator](r.tags['price'], threshold)
+                    numeric_operators_elasticsearch[operator](
+                        r.tags['price'], threshold
+                    )
                     for r in indexed_docs[0].matches
                 ]
             )
+
 
 @pytest.mark.parametrize('operator', list(numeric_operators_elasticsearch.keys()))
 def test_filtering(docker_compose, operator: str):
@@ -105,12 +126,7 @@ def test_filtering(docker_compose, operator: str):
         },
     )
 
-    docs = DocumentArray(
-        [
-            Document(id=f'r{i}', tags={'price': i})
-            for i in range(50)
-        ]
-    )
+    docs = DocumentArray([Document(id=f'r{i}', tags={'price': i}) for i in range(50)])
     with f:
 
         f.index(docs)
