@@ -142,4 +142,5 @@ class ElasticSearchIndexer(Executor):
 
     def close(self) -> None:
         super().close()
+        self._index.sync()
         del self._index
