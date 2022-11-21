@@ -57,6 +57,7 @@ class ElasticSearchIndexer(Executor):
                 'ef_construction': ef_construction,
                 'm': m,
                 'columns': columns,
+                'list_like': False,
             },
         )
 
