@@ -1,2 +1,2 @@
 docarray[elasticsearch]>=0.19.0
--e https://github.com/jina-ai/jina.git@branch/master
+git+https://github.com/jina-ai/jina.git@master
