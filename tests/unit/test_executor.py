@@ -78,7 +78,6 @@ def test_update(docs, update_docs, docker_compose):
 
     # update first doc
     indexer.update(update_docs)
-    assert indexer._index[0].id == 'doc1'
     assert indexer._index['doc1'].text == 'modified'
 
 
@@ -124,11 +123,8 @@ def test_persistence(docs, docker_compose):
     assert_document_arrays_equal(indexer2._index, docs)
 
 
-@pytest.mark.parametrize(
-    'metric, metric_name',
-    [('l2_norm', 'euclid_similarity'), ('cosine', 'cosine_similarity')],
-)
-def test_search(metric, metric_name, docs, docker_compose):
+@pytest.mark.parametrize('metric', ['l2_norm', 'cosine'])
+def test_search(metric, docs, docker_compose):
     # test general/normal case
     indexer = ElasticSearchIndexer(index_name='test7', distance=metric)
     indexer.index(docs)
@@ -137,7 +133,7 @@ def test_search(metric, metric_name, docs, docker_compose):
 
     for doc in query:
         similarities = [
-            t[metric_name].value for t in doc.matches[:, 'scores']
+            t['score'].value for t in doc.matches[:, 'scores']
         ]
         assert sorted(similarities, reverse=True) == similarities
 
